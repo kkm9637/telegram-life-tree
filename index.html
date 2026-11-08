@@ -4,9 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>생명나무 열매 맺기</title>
-  <!-- 텔레그램 웹앱 전용 SDK -->
+  <!-- 텔레그램 웹앱 SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="style.css?v=4">
+
+  <!-- Firebase 실시간 DB SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <header>
@@ -20,18 +25,16 @@
 
   <!-- 메인 인터랙티브 나무 영역 -->
   <main class="tree-container" id="treeContainer">
-    <!-- 코드 내장형 황금빛 생명나무 일러스트 (외부 이미지 불필요) -->
+    <!-- 내장형 황금빛 생명나무 SVG -->
     <div class="tree-svg-wrap">
       <svg class="life-tree-svg" viewBox="0 0 1000 1300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- 하늘 & 빛 그라데이션 -->
           <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#2a75d3" />
             <stop offset="35%" stop-color="#64b5f6" />
             <stop offset="65%" stop-color="#fff6cc" />
             <stop offset="100%" stop-color="#ffe082" />
           </linearGradient>
-
           <radialGradient id="sunGlow" cx="50%" cy="42%" r="55%">
             <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
             <stop offset="25%" stop-color="#fff3a1" stop-opacity="0.9" />
@@ -39,8 +42,6 @@
             <stop offset="85%" stop-color="#ff8f00" stop-opacity="0.1" />
             <stop offset="100%" stop-color="#ff8f00" stop-opacity="0" />
           </radialGradient>
-
-          <!-- 황금 나무 수관 그라데이션 -->
           <radialGradient id="leafGlow" cx="45%" cy="35%" r="60%">
             <stop offset="0%" stop-color="#ffffff" />
             <stop offset="20%" stop-color="#fff59d" />
@@ -48,29 +49,22 @@
             <stop offset="85%" stop-color="#f57f17" />
             <stop offset="100%" stop-color="#b26a00" />
           </radialGradient>
-
-          <!-- 기둥 및 가지 그라데이션 -->
           <linearGradient id="trunkGrad" x1="0%" y1="100%" x2="0%" y2="0%">
             <stop offset="0%" stop-color="#4e2606" />
             <stop offset="30%" stop-color="#8d4b10" />
             <stop offset="65%" stop-color="#f5a623" />
             <stop offset="100%" stop-color="#fff59d" />
           </linearGradient>
-
-          <!-- 언덕 및 생명수 그라데이션 -->
           <linearGradient id="hillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#a0c926" />
             <stop offset="40%" stop-color="#558b2f" />
             <stop offset="100%" stop-color="#2e5812" />
           </linearGradient>
-
           <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#e0f7fa" />
             <stop offset="50%" stop-color="#4dd0e1" />
             <stop offset="100%" stop-color="#00838f" />
           </linearGradient>
-
-          <!-- 네온 광채 필터 -->
           <filter id="divineGlow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="10" result="blur" />
             <feMerge>
@@ -80,10 +74,7 @@
           </filter>
         </defs>
 
-        <!-- 배경 하늘 -->
         <rect width="1000" height="1300" fill="url(#skyGrad)" />
-
-        <!-- 뻗어나가는 태양 광선 -->
         <g opacity="0.55">
           <polygon points="500,520 -200,-100 100,-100" fill="#fff9c4" />
           <polygon points="500,520 200,-100 500,-100" fill="#fffde7" />
@@ -91,22 +82,14 @@
           <polygon points="500,520 1000,-100 1300,100" fill="#fff59d" />
           <polygon points="500,520 1200,300 1300,600" fill="#ffe082" />
           <polygon points="500,520 -200,600 -100,300" fill="#ffe082" />
-          <polygon points="500,520 -200,200 -100,-50" fill="#fff9c4" />
-          <polygon points="500,520 1100,200 1200,-50" fill="#fff9c4" />
         </g>
-
-        <!-- 중앙 영롱한 태양 후광 -->
         <circle cx="500" cy="500" r="500" fill="url(#sunGlow)" />
-
-        <!-- 구름 레이어 -->
         <g fill="#ffffff" opacity="0.6">
           <ellipse cx="120" cy="280" rx="160" ry="80" />
           <ellipse cx="250" cy="320" rx="120" ry="60" />
           <ellipse cx="880" cy="300" rx="170" ry="85" />
           <ellipse cx="760" cy="340" rx="130" ry="65" />
         </g>
-
-        <!-- 풍성한 황금빛 나뭇잎 덩어리 (수관) -->
         <g filter="url(#divineGlow)">
           <circle cx="500" cy="340" r="230" fill="url(#leafGlow)" opacity="0.95" />
           <circle cx="340" cy="390" r="180" fill="url(#leafGlow)" opacity="0.92" />
@@ -117,56 +100,23 @@
           <circle cx="620" cy="510" r="155" fill="url(#leafGlow)" opacity="0.9" />
           <circle cx="500" cy="450" r="210" fill="#fff9c4" opacity="0.65" />
         </g>
-
-        <!-- 황금 생명나무 기둥 및 굵은 가지 -->
         <g stroke="url(#trunkGrad)" stroke-linecap="round" fill="none">
-          <!-- 거대한 기둥 -->
           <path d="M460,980 Q485,740 455,610 Q420,490 320,380" stroke-width="48" />
           <path d="M540,980 Q515,740 545,610 Q580,490 680,380" stroke-width="48" />
           <path d="M500,980 Q500,660 500,440" stroke-width="56" />
-
-          <!-- 가지 분기 -->
           <path d="M470,640 Q360,540 220,490" stroke-width="26" />
           <path d="M530,640 Q640,540 780,490" stroke-width="26" />
           <path d="M480,520 Q390,430 320,320" stroke-width="20" />
           <path d="M520,520 Q610,430 680,320" stroke-width="20" />
-          <path d="M450,440 Q400,340 440,250" stroke-width="16" />
-          <path d="M550,440 Q600,340 560,250" stroke-width="16" />
-
-          <!-- 뿌리 및 잔가지 디테일 (황금 하이라이트) -->
           <path d="M440,980 Q360,1050 240,1110" stroke-width="24" stroke="#c47a16" />
           <path d="M560,980 Q640,1050 760,1110" stroke-width="24" stroke="#c47a16" />
-          <path d="M485,980 Q470,1060 410,1120" stroke-width="18" stroke="#c47a16" />
-          <path d="M515,980 Q530,1060 590,1120" stroke-width="18" stroke="#c47a16" />
-
-          <!-- 중심 광채 라인 -->
-          <path d="M500,980 L500,450" stroke="#ffffff" stroke-width="12" opacity="0.8" />
-          <path d="M470,620 Q380,530 250,490" stroke="#fff9c4" stroke-width="6" opacity="0.75" />
-          <path d="M530,620 Q620,530 750,490" stroke="#fff9c4" stroke-width="6" opacity="0.75" />
         </g>
-
-        <!-- 푸른 언덕 동산 -->
         <ellipse cx="500" cy="1150" rx="550" ry="190" fill="url(#hillGrad)" />
-
-        <!-- 생명수의 시냇물 / 폭포 흐름 -->
         <path d="M440,1070 Q470,1140 370,1300 L630,1300 Q530,1140 560,1070 Z" fill="url(#waterGrad)" opacity="0.9" />
-        <path d="M470,1100 Q485,1180 440,1300" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.8" fill="none" />
-        <path d="M530,1100 Q515,1180 560,1300" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.8" fill="none" />
-        <path d="M500,1080 L500,1300" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.9" fill="none" />
-
-        <!-- 빛나는 반짝임 별들 -->
-        <g fill="#ffffff">
-          <path d="M500,420 Q500,460 520,460 Q500,460 500,500 Q500,460 480,460 Q500,460 500,420" />
-          <path d="M350,300 Q350,330 365,330 Q350,330 350,360 Q350,330 335,330 Q350,330 350,300" />
-          <path d="M650,310 Q650,340 665,340 Q650,340 650,370 Q650,340 635,340 Q650,340 650,310" />
-          <path d="M220,420 Q220,440 232,440 Q220,440 220,460 Q220,440 208,440 Q220,440 220,420" />
-          <path d="M780,430 Q780,450 792,450 Q780,450 780,470 Q780,450 768,450 Q780,450 780,430" />
-          <path d="M500,750 Q500,780 515,780 Q500,780 500,810 Q500,780 485,780 Q500,780 500,750" />
-        </g>
       </svg>
     </div>
 
-    <!-- 열매들이 달리는 터치 레이어 -->
+    <!-- 열매들이 달리는 실시간 레이어 -->
     <div class="fruit-layer" id="fruitLayer"></div>
   </main>
 
@@ -194,6 +144,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
