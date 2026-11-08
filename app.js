@@ -12,7 +12,7 @@ let currentZone = 1;
 let editingFruitId = null;
 let pendingCoords = { x: 0, y: 0 };
 
-// 브라우저 로컬 저장소 로드
+// 데이터 불러오기
 let treeData = JSON.parse(localStorage.getItem('life_tree_fruits') || '{}');
 
 // DOM 엘리먼트
@@ -75,7 +75,7 @@ function renderFruits() {
   });
 }
 
-// 3. 신규 열매 터치 생성 이벤트
+// 3. 나무 터치 시 새 열매 생성 이벤트
 fruitLayer.addEventListener('click', (e) => {
   const rect = fruitLayer.getBoundingClientRect();
   const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
@@ -89,7 +89,7 @@ fruitLayer.addEventListener('click', (e) => {
   openCreateModal();
 });
 
-// 신규 모달 열기
+// 신규 모달
 function openCreateModal() {
   editingFruitId = null;
   modalTitle.textContent = '열매 달기 🍎';
@@ -102,7 +102,7 @@ function openCreateModal() {
   fruitNameInput.focus();
 }
 
-// 수정 모달 열기
+// 수정 모달
 function openEditModal(fruit) {
   editingFruitId = fruit.id;
   modalTitle.textContent = '열매 수정 / 삭제 🍎';
@@ -120,7 +120,7 @@ btnCancel.addEventListener('click', () => {
   modalOverlay.classList.remove('active');
 });
 
-// 4. 저장 (신규 등록 또는 수정)
+// 4. 저장 (신규 등록 or 수정)
 btnSave.addEventListener('click', () => {
   const name = fruitNameInput.value.trim();
   const role = fruitRoleInput.value.trim();
@@ -136,7 +136,7 @@ btnSave.addEventListener('click', () => {
   }
 
   if (editingFruitId) {
-    // 기존 열매 내용 수정
+    // 기존 열매 수정
     const target = treeData[currentZone].find(f => f.id === editingFruitId);
     if (target) {
       target.name = name;
@@ -183,6 +183,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// 실행
+// 앱 실행
 initZones();
 renderFruits();
