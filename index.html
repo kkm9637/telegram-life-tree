@@ -6,7 +6,8 @@
   <title>생명나무 열매 맺기</title>
   <!-- 텔레그램 웹앱 전용 SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <!-- 캐시 방지 쿼리스트링(?v=3) 포함 -->
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header>
@@ -20,8 +21,10 @@
 
   <!-- 메인 인터랙티브 나무 영역 -->
   <main class="tree-container" id="treeContainer">
-    <!-- 배경 이미지 -->
-    <div class="tree-bg"></div>
+    <!-- 배경 이미지 (HTML img 태그로 확실하게 로드) -->
+    <div class="tree-bg">
+      <img src="./tree.jpg" alt="생명나무" class="bg-img" id="bgTreeImg">
+    </div>
 
     <!-- 열매들이 렌더링되는 터치 레이어 -->
     <div class="fruit-layer" id="fruitLayer"></div>
@@ -30,7 +33,7 @@
   <!-- 열매 생성 / 수정 모달 -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-card">
-      <h3 id="modalTitle">열매 달기</h3>
+      <h3 id="modalTitle">열매 달기 🍎</h3>
       <p class="modal-coord-text">구역: <span id="currentZoneLabel">1구역</span></p>
       
       <div class="input-field">
@@ -51,6 +54,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
