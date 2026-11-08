@@ -8,11 +8,11 @@ if (tg) {
 const TOTAL_ZONES = 11;
 let currentZone = 1;
 
-// 선택된/생성할 열매의 상태
-let editingFruitId = null; // null이면 신규 생성, id가 있으면 수정 모드
+// 상태 관리
+let editingFruitId = null;
 let pendingCoords = { x: 0, y: 0 };
 
-// 데이터 불러오기
+// 브라우저 로컬 저장소 로드
 let treeData = JSON.parse(localStorage.getItem('life_tree_fruits') || '{}');
 
 // DOM 엘리먼트
@@ -55,7 +55,6 @@ function renderFruits() {
     apple.style.left = `${item.x}%`;
     apple.style.top = `${item.y}%`;
 
-    // 사과 잎, 꼭지, 본체 구조
     apple.innerHTML = `
       <div class="apple-stem"></div>
       <div class="apple-leaf"></div>
@@ -90,7 +89,7 @@ fruitLayer.addEventListener('click', (e) => {
   openCreateModal();
 });
 
-// 신규 생성 모달 열기
+// 신규 모달 열기
 function openCreateModal() {
   editingFruitId = null;
   modalTitle.textContent = '열매 달기 🍎';
@@ -103,7 +102,7 @@ function openCreateModal() {
   fruitNameInput.focus();
 }
 
-// 열매 수정 모달 열기
+// 수정 모달 열기
 function openEditModal(fruit) {
   editingFruitId = fruit.id;
   modalTitle.textContent = '열매 수정 / 삭제 🍎';
@@ -121,7 +120,7 @@ btnCancel.addEventListener('click', () => {
   modalOverlay.classList.remove('active');
 });
 
-// 4. 저장 (신규 등록 or 수정)
+// 4. 저장 (신규 등록 또는 수정)
 btnSave.addEventListener('click', () => {
   const name = fruitNameInput.value.trim();
   const role = fruitRoleInput.value.trim();
@@ -137,7 +136,7 @@ btnSave.addEventListener('click', () => {
   }
 
   if (editingFruitId) {
-    // 기존 열매 수정
+    // 기존 열매 내용 수정
     const target = treeData[currentZone].find(f => f.id === editingFruitId);
     if (target) {
       target.name = name;
@@ -162,9 +161,7 @@ btnSave.addEventListener('click', () => {
 btnDelete.addEventListener('click', () => {
   if (!editingFruitId) return;
 
-  const confirmMsg = '이 열매를 삭제하시겠습니까?';
-  const confirmed = confirm(confirmMsg);
-
+  const confirmed = confirm('이 열매를 삭제하시겠습니까?');
   if (confirmed) {
     treeData[currentZone] = treeData[currentZone].filter(f => f.id !== editingFruitId);
     saveAndRefresh();
@@ -186,6 +183,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// 실행 시작
+// 실행
 initZones();
 renderFruits();
