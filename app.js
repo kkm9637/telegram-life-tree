@@ -6,20 +6,27 @@ if (tg) {
 }
 
 // -------------------------------------------------------------
-// [설정] 서버 API 주소 (우분투 서버 IP 또는 도메인)
-// 예: 'https://api.yourdomain.com' 또는 'http://123.456.78.90:8000'
-// 비워두면('') 로컬스토리지 모드로 동작합니다.
+// [중요] 1단계에서 복사한 Firebase Realtime Database URL 입력
 // -------------------------------------------------------------
-const API_BASE_URL = ''; 
+const firebaseConfig = {
+  databaseURL: "https://lifetree-app-ee9e9-default-rtdb.firebaseio.com/"
+};
+
+// Firebase 초기화
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const fruitsRef = db.ref('fruits');
 
 const TOTAL_ZONES = 11;
 let currentZone = 1;
 
-let treeData = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: [] };
+let treeData = {};
 let editingFruitId = null;
 let pendingCoords = { x: 0, y: 0 };
 
-// 드래그 상태 관리 변수
+// 드래그 상태 관리
 let isDragging = false;
 let draggedFruitId = null;
 let hasMoved = false;
@@ -37,31 +44,7 @@ const btnCancel = document.getElementById('btnCancel');
 const btnDelete = document.getElementById('btnDelete');
 const btnSave = document.getElementById('btnSave');
 
-// 1. 서버 데이터 불러오기 (트래픽 최적화 Polling)
-async function fetchFruits() {
-  if (isDragging) return; // 드래그 중 화면 갱신 방지
-
-  if (API_BASE_URL) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/fruits`);
-      if (res.ok) {
-        treeData = await res.json();
-        renderFruits();
-      }
-    } catch (err) {
-      console.error('API Fetch Error:', err);
-    }
-  } else {
-    // 로컬스토리지 폴백
-    treeData = JSON.parse(localStorage.getItem('life_tree_fruits') || '{}');
-    for (let i = 1; i <= TOTAL_ZONES; i++) {
-      if (!treeData[i]) treeData[i] = [];
-    }
-    renderFruits();
-  }
-}
-
-// 2. 11개 구역 칩 초기화
+// 1. 11개 구역 바 초기화
 function initZones() {
   zoneBar.innerHTML = '';
   for (let i = 1; i <= TOTAL_ZONES; i++) {
@@ -78,12 +61,26 @@ function initZones() {
   }
 }
 
-// 3. 열매 렌더링 및 드래그 바인딩
+// 2. 실시간 데이터 리스너 (누군가 열매를 달거나 옮기면 0.1초 만에 자동 실행)
+fruitsRef.on('value', (snapshot) => {
+  treeData = snapshot.val() || {};
+  
+  // 내가 지금 사과를 손가락으로 드래그하고 있을 때는 화면 리셋 방지
+  if (!isDragging) {
+    renderFruits();
+  }
+});
+
+// 3. 열매 화면 렌더링
 function renderFruits() {
   fruitLayer.innerHTML = '';
-  const zoneFruits = treeData[currentZone] || [];
+  
+  // 현재 구역에 해당하는 열매들만 필터링
+  const currentFruits = Object.entries(treeData)
+    .filter(([id, item]) => item.zone === currentZone)
+    .map(([id, item]) => ({ id, ...item }));
 
-  zoneFruits.forEach(item => {
+  currentFruits.forEach(item => {
     const apple = document.createElement('div');
     apple.className = 'apple-node';
     apple.id = `apple_${item.id}`;
@@ -107,7 +104,7 @@ function renderFruits() {
   });
 }
 
-// 4. 드래그 앤 드롭 로직
+// 4. 모바일 터치 드래그 앤 드롭
 function onPointerDown(e, fruit) {
   e.stopPropagation();
   isDragging = true;
@@ -134,7 +131,6 @@ function onPointerDown(e, fruit) {
     let xPercent = ((moveEvent.clientX - rect.left) / rect.width) * 100;
     let yPercent = ((moveEvent.clientY - rect.top) / rect.height) * 100;
 
-    // 화면 밖 벗어남 방지 (2% ~ 98%)
     xPercent = Math.max(2, Math.min(98, xPercent));
     yPercent = Math.max(2, Math.min(98, yPercent));
 
@@ -154,40 +150,23 @@ function onPointerDown(e, fruit) {
 
     isDragging = false;
 
-    // 단순 클릭이면 모달 오픈
+    // 단순 터치 클릭이면 수정/삭제 모달 열기
     if (!hasMoved) {
       openEditModal(fruit);
       return;
     }
 
-    // 드래그 완료 후 최종 좌표 계산 및 저장
+    // 드래그 종료 시 최종 위치를 실시간 DB에 업데이트 (다른 사람 화면에도 즉시 이동)
     const rect = fruitLayer.getBoundingClientRect();
     let finalX = ((upEvent.clientX - rect.left) / rect.width) * 100;
     let finalY = ((upEvent.clientY - rect.top) / rect.height) * 100;
     finalX = parseFloat(Math.max(2, Math.min(98, finalX)).toFixed(2));
     finalY = parseFloat(Math.max(2, Math.min(98, finalY)).toFixed(2));
 
-    // 메모리 데이터 업데이트
-    const target = treeData[currentZone].find(f => f.id === draggedFruitId);
-    if (target) {
-      target.x = finalX;
-      target.y = finalY;
-    }
-
-    // 서버 or 로컬 반영
-    if (API_BASE_URL) {
-      try {
-        await fetch(`${API_BASE_URL}/api/fruits/${draggedFruitId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ x: finalX, y: finalY })
-        });
-      } catch (err) {
-        console.error('위치 업데이트 실패:', err);
-      }
-    } else {
-      localStorage.setItem('life_tree_fruits', JSON.stringify(treeData));
-    }
+    db.ref(`fruits/${draggedFruitId}`).update({
+      x: finalX,
+      y: finalY
+    });
 
     if (tg?.HapticFeedback) {
       tg.HapticFeedback.impactOccurred('light');
@@ -242,8 +221,8 @@ btnCancel.addEventListener('click', () => {
   modalOverlay.classList.remove('active');
 });
 
-// 6. 생성 / 수정 저장
-btnSave.addEventListener('click', async () => {
+// 6. 생성 / 수정 저장 (Firebase에 즉시 push/update)
+btnSave.addEventListener('click', () => {
   const name = fruitNameInput.value.trim();
   const role = fruitRoleInput.value.trim();
 
@@ -254,45 +233,22 @@ btnSave.addEventListener('click', async () => {
   }
 
   if (editingFruitId) {
-    // 수정
-    const target = treeData[currentZone].find(f => f.id === editingFruitId);
-    if (target) {
-      target.name = name;
-      target.role = role;
-    }
-
-    if (API_BASE_URL) {
-      await fetch(`${API_BASE_URL}/api/fruits/${editingFruitId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, role })
-      });
-    }
+    // 기존 열매 수정
+    db.ref(`fruits/${editingFruitId}`).update({
+      name,
+      role
+    });
   } else {
-    // 신규 생성
-    const newFruit = {
-      id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    // 새 열매 등록 (고유 키 자동 생성)
+    const newFruitRef = fruitsRef.push();
+    newFruitRef.set({
       zone: currentZone,
       name,
       role,
       x: pendingCoords.x,
-      y: pendingCoords.y
-    };
-
-    if (!treeData[currentZone]) treeData[currentZone] = [];
-    treeData[currentZone].push(newFruit);
-
-    if (API_BASE_URL) {
-      await fetch(`${API_BASE_URL}/api/fruits`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newFruit)
-      });
-    }
-  }
-
-  if (!API_BASE_URL) {
-    localStorage.setItem('life_tree_fruits', JSON.stringify(treeData));
+      y: pendingCoords.y,
+      createdAt: Date.now()
+    });
   }
 
   if (tg?.HapticFeedback) {
@@ -300,27 +256,16 @@ btnSave.addEventListener('click', async () => {
   }
 
   modalOverlay.classList.remove('active');
-  renderFruits();
 });
 
 // 7. 열매 삭제
-btnDelete.addEventListener('click', async () => {
+btnDelete.addEventListener('click', () => {
   if (!editingFruitId) return;
 
   const confirmed = confirm('이 열매를 삭제하시겠습니까?');
   if (confirmed) {
-    treeData[currentZone] = treeData[currentZone].filter(f => f.id !== editingFruitId);
-
-    if (API_BASE_URL) {
-      await fetch(`${API_BASE_URL}/api/fruits/${editingFruitId}`, {
-        method: 'DELETE'
-      });
-    } else {
-      localStorage.setItem('life_tree_fruits', JSON.stringify(treeData));
-    }
-
+    db.ref(`fruits/${editingFruitId}`).remove();
     modalOverlay.classList.remove('active');
-    renderFruits();
   }
 });
 
@@ -330,7 +275,5 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// 초기 구동 및 3.5초 주기 실시간 자동 동기화
+// 실행
 initZones();
-fetchFruits();
-setInterval(fetchFruits, 3500);
