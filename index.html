@@ -12,72 +12,40 @@
   <header>
     <div class="title-wrap">
       <h1>생명나무 열매 맺기</h1>
-      <p>구역을 선택하고 나무를 터치해 열매를 달아보세요</p>
+      <span class="info-badge">화면의 나무를 터치하면 열매가 열립니다 🍎</span>
     </div>
     <!-- 11개 구역 선택 바 -->
     <nav class="zone-bar" id="zoneBar"></nav>
   </header>
 
-  <!-- 메인 인터랙티브 캔버스/영역 -->
+  <!-- 메인 인터랙티브 나무 영역 -->
   <main class="tree-container" id="treeContainer">
-    <!-- 고화질 배경 레이어 (그라데이션 및 발광 SVG 나무) -->
-    <div class="tree-bg">
-      <svg class="tree-art" viewBox="0 0 1000 1200" preserveAspectRatio="xMidYMid meet">
-        <defs>
-          <radialGradient id="celestialGlow" cx="50%" cy="40%" r="50%">
-            <stop offset="0%" stop-color="#ffd56b" stop-opacity="0.45" />
-            <stop offset="60%" stop-color="#805ad5" stop-opacity="0.15" />
-            <stop offset="100%" stop-color="#090a10" stop-opacity="0" />
-          </radialGradient>
-          <linearGradient id="trunkGlow" x1="0%" y1="100%" x2="0%" y2="0%">
-            <stop offset="0%" stop-color="#311947" />
-            <stop offset="50%" stop-color="#7952b3" />
-            <stop offset="100%" stop-color="#d6bcfa" />
-          </linearGradient>
-          <filter id="neonBlur" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+    <!-- 배경 이미지 -->
+    <div class="tree-bg"></div>
 
-        <!-- 배경 오라 -->
-        <circle cx="500" cy="500" r="480" fill="url(#celestialGlow)" />
-
-        <!-- 생명나무 기둥 및 큰 가지 (SVG 벡터로 깨짐 없는 퀄리티 유지) -->
-        <g filter="url(#neonBlur)">
-          <path d="M480,1180 Q500,850 470,680 Q430,480 300,320 M470,680 Q550,520 680,360 M500,560 Q500,380 500,220 M390,430 Q280,380 200,280 M600,450 Q720,400 810,310" 
-                stroke="url(#trunkGlow)" stroke-width="22" stroke-linecap="round" fill="none" opacity="0.9" />
-          <path d="M500,1180 Q520,900 500,680 Q530,520 420,380 Q320,270 260,180 M510,610 Q610,480 730,340 M500,380 Q560,280 530,160" 
-                stroke="#ecd8ff" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.8" />
-        </g>
-      </svg>
-    </div>
-
-    <!-- 열매들이 렌더링되는 DOM 레이어 -->
+    <!-- 열매들이 렌더링되는 터치 레이어 -->
     <div class="fruit-layer" id="fruitLayer"></div>
   </main>
 
-  <!-- 열매 생성 팝업 모달 -->
+  <!-- 열매 생성 / 수정 모달 -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-card">
       <h3 id="modalTitle">열매 달기</h3>
-      <p class="modal-coord-text">선택 구역: <span id="currentZoneLabel">1구역</span></p>
+      <p class="modal-coord-text">구역: <span id="currentZoneLabel">1구역</span></p>
       
       <div class="input-field">
         <label for="fruitName">이름</label>
-        <input type="text" id="fruitName" placeholder="예: 홍길동" maxlength="15" autocomplete="off">
+        <input type="text" id="fruitName" placeholder="예: 홍길동" maxlength="12" autocomplete="off">
       </div>
       
       <div class="input-field">
-        <label for="fruitRole">역할</label>
-        <input type="text" id="fruitRole" placeholder="예: 구역장 / 찬양인도" maxlength="20" autocomplete="off">
+        <label for="fruitRole">나의 합심</label>
+        <input type="text" id="fruitRole" placeholder="예시: 활동, 후원, 응원 등" maxlength="30" autocomplete="off">
       </div>
 
-      <div class="modal-actions">
+      <div class="modal-actions" id="modalActions">
         <button type="button" class="btn btn-cancel" id="btnCancel">취소</button>
+        <button type="button" class="btn btn-delete" id="btnDelete" style="display: none;">삭제</button>
         <button type="button" class="btn btn-save" id="btnSave">열매 맺기</button>
       </div>
     </div>
