@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <header>
@@ -25,23 +25,27 @@
 
   <!-- 메인 인터랙티브 나무 영역 -->
   <main class="tree-container" id="treeContainer">
-    <!-- 내장형 황금빛 생명나무 SVG -->
+    <!-- 내장형 황금빛 생명나무 SVG (직선 광선 제거 및 은은한 후광 적용) -->
     <div class="tree-svg-wrap">
       <svg class="life-tree-svg" viewBox="0 0 1000 1300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
         <defs>
+          <!-- 하늘 그라데이션 -->
           <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#2a75d3" />
             <stop offset="35%" stop-color="#64b5f6" />
-            <stop offset="65%" stop-color="#fff6cc" />
-            <stop offset="100%" stop-color="#ffe082" />
+            <stop offset="65%" stop-color="#fff9d6" />
+            <stop offset="100%" stop-color="#ffecb3" />
           </linearGradient>
-          <radialGradient id="sunGlow" cx="50%" cy="42%" r="55%">
+          
+          <!-- 은은하게 퍼지는 중앙 빛 -->
+          <radialGradient id="sunGlow" cx="50%" cy="45%" r="60%">
             <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-            <stop offset="25%" stop-color="#fff3a1" stop-opacity="0.9" />
-            <stop offset="55%" stop-color="#ffb300" stop-opacity="0.45" />
-            <stop offset="85%" stop-color="#ff8f00" stop-opacity="0.1" />
+            <stop offset="15%" stop-color="#fffde7" stop-opacity="0.9" />
+            <stop offset="35%" stop-color="#fff59d" stop-opacity="0.6" />
+            <stop offset="60%" stop-color="#ffb300" stop-opacity="0.2" />
             <stop offset="100%" stop-color="#ff8f00" stop-opacity="0" />
           </radialGradient>
+          
           <radialGradient id="leafGlow" cx="45%" cy="35%" r="60%">
             <stop offset="0%" stop-color="#ffffff" />
             <stop offset="20%" stop-color="#fff59d" />
@@ -49,24 +53,28 @@
             <stop offset="85%" stop-color="#f57f17" />
             <stop offset="100%" stop-color="#b26a00" />
           </radialGradient>
+          
           <linearGradient id="trunkGrad" x1="0%" y1="100%" x2="0%" y2="0%">
             <stop offset="0%" stop-color="#4e2606" />
             <stop offset="30%" stop-color="#8d4b10" />
             <stop offset="65%" stop-color="#f5a623" />
             <stop offset="100%" stop-color="#fff59d" />
           </linearGradient>
+          
           <linearGradient id="hillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#a0c926" />
             <stop offset="40%" stop-color="#558b2f" />
             <stop offset="100%" stop-color="#2e5812" />
           </linearGradient>
+          
           <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stop-color="#e0f7fa" />
             <stop offset="50%" stop-color="#4dd0e1" />
             <stop offset="100%" stop-color="#00838f" />
           </linearGradient>
+          
           <filter id="divineGlow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="10" result="blur" />
+            <feGaussianBlur stdDeviation="12" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -74,22 +82,22 @@
           </filter>
         </defs>
 
+        <!-- 배경 하늘 -->
         <rect width="1000" height="1300" fill="url(#skyGrad)" />
-        <g opacity="0.55">
-          <polygon points="500,520 -200,-100 100,-100" fill="#fff9c4" />
-          <polygon points="500,520 200,-100 500,-100" fill="#fffde7" />
-          <polygon points="500,520 600,-100 900,-100" fill="#fff9c4" />
-          <polygon points="500,520 1000,-100 1300,100" fill="#fff59d" />
-          <polygon points="500,520 1200,300 1300,600" fill="#ffe082" />
-          <polygon points="500,520 -200,600 -100,300" fill="#ffe082" />
-        </g>
-        <circle cx="500" cy="500" r="500" fill="url(#sunGlow)" />
-        <g fill="#ffffff" opacity="0.6">
+        
+        <!-- 직선 광선을 제거하고 부드러운 원형 후광 레이어로 대체 -->
+        <circle cx="500" cy="450" r="550" fill="url(#sunGlow)" />
+        <circle cx="500" cy="450" r="300" fill="#ffffff" opacity="0.4" filter="url(#divineGlow)" />
+        
+        <!-- 구름 레이어 -->
+        <g fill="#ffffff" opacity="0.65">
           <ellipse cx="120" cy="280" rx="160" ry="80" />
           <ellipse cx="250" cy="320" rx="120" ry="60" />
           <ellipse cx="880" cy="300" rx="170" ry="85" />
           <ellipse cx="760" cy="340" rx="130" ry="65" />
         </g>
+        
+        <!-- 풍성한 황금빛 나뭇잎 -->
         <g filter="url(#divineGlow)">
           <circle cx="500" cy="340" r="230" fill="url(#leafGlow)" opacity="0.95" />
           <circle cx="340" cy="390" r="180" fill="url(#leafGlow)" opacity="0.92" />
@@ -100,6 +108,8 @@
           <circle cx="620" cy="510" r="155" fill="url(#leafGlow)" opacity="0.9" />
           <circle cx="500" cy="450" r="210" fill="#fff9c4" opacity="0.65" />
         </g>
+        
+        <!-- 나무 기둥 및 가지 -->
         <g stroke="url(#trunkGrad)" stroke-linecap="round" fill="none">
           <path d="M460,980 Q485,740 455,610 Q420,490 320,380" stroke-width="48" />
           <path d="M540,980 Q515,740 545,610 Q580,490 680,380" stroke-width="48" />
@@ -111,8 +121,26 @@
           <path d="M440,980 Q360,1050 240,1110" stroke-width="24" stroke="#c47a16" />
           <path d="M560,980 Q640,1050 760,1110" stroke-width="24" stroke="#c47a16" />
         </g>
+        
+        <!-- 푸른 언덕 -->
         <ellipse cx="500" cy="1150" rx="550" ry="190" fill="url(#hillGrad)" />
+        
+        <!-- 생명수 폭포 -->
         <path d="M440,1070 Q470,1140 370,1300 L630,1300 Q530,1140 560,1070 Z" fill="url(#waterGrad)" opacity="0.9" />
+        
+        <!-- 반짝이는 빛 가루 강화 -->
+        <g fill="#ffffff" filter="url(#divineGlow)" opacity="0.85">
+          <circle cx="480" cy="420" r="6" />
+          <circle cx="350" cy="320" r="5" />
+          <circle cx="650" cy="330" r="7" />
+          <circle cx="220" cy="440" r="4" />
+          <circle cx="780" cy="450" r="5" />
+          <circle cx="510" cy="270" r="6" />
+          <circle cx="410" cy="230" r="4" />
+          <circle cx="590" cy="260" r="5" />
+          <circle cx="300" cy="530" r="6" />
+          <circle cx="700" cy="540" r="4" />
+        </g>
       </svg>
     </div>
 
@@ -144,6 +172,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
